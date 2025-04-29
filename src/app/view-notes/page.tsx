@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { loadNotes, saveNotes, Note } from "@/lib/storage";
 import { Edit2, Star, Trash2 } from "lucide-react";
 import Spinner from "@/components/Spinner";
@@ -16,25 +16,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-const gradients = [
-  "from-pink-400 to-pink-600",
-  "from-purple-400 to-purple-600",
-  "from-blue-400 to-blue-600",
-  "from-green-400 to-green-600",
-  "from-yellow-400 to-yellow-600",
-  "from-red-400 to-red-600",
-];
+import Pagination from "@/components/Pagination";
+import { toast } from "sonner";
+import { gradients } from "@/lib/contants";
 
 export default function ViewNotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
-  // ── Edit state ───────────────────────────────────────────────────
+  // Edit state
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+
+    // pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 6;
 
   useEffect(() => {
     try {
@@ -50,6 +49,7 @@ export default function ViewNotesPage() {
     const filtered = notes.filter((n) => n.id !== id);
     saveNotes(filtered);
     setNotes(filtered);
+    toast.success("Note deleted.");
   };
 
   const toggleStar = (id: string) => {
@@ -58,6 +58,15 @@ export default function ViewNotesPage() {
     );
     saveNotes(updated);
     setNotes(updated);
+
+    const toggled = updated.find((n) => n.id === id);
+    if (!toggled) return;
+
+    if (toggled.starred) {
+      toast.success("⭐ Note starred!");
+    } else {
+      toast("⭐ Note unstarred");     
+    }
   };
 
   const startEditing = (note: Note) => {
@@ -76,12 +85,20 @@ export default function ViewNotesPage() {
     saveNotes(updated);
     setNotes(updated);
     setEditingNote(null);
+    toast.success("Note updated.");
   };
+
+  // derive current page's notes
+  const totalPages = Math.ceil(notes.length / pageSize);
+  const pagedNotes = useMemo(
+    () => notes.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [notes, currentPage]
+  );
 
   if (loading) return <Spinner />;
 
   return (
-    <>
+    <div className="max-w-6xl mx-auto p-4">
       <div className="space-y-4">
         {error && <ErrorBanner message={error} />}
 
@@ -89,11 +106,12 @@ export default function ViewNotesPage() {
           <p className="text-center text-gray-500">No notes yet. Add one!</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notes.map((note, idx) => {
+            {pagedNotes.map((note, idx) => {
               const bg = gradients[idx % gradients.length];
               return (
                 <div
                   key={note.id}
+                  onClick={() => setSelectedNote(note)}
                   className={clsx(
                     "rounded-lg p-4 text-white flex flex-col justify-between",
                     "bg-gradient-to-br",
@@ -119,17 +137,17 @@ export default function ViewNotesPage() {
                   </div>
 
                   <div className="flex items-center justify-between mt-4 opacity-90">
-                    <button
-                      onClick={() => startEditing(note)}
-                      aria-label="Edit"
-                      className="hover:opacity-80"
-                    >
-                      <Edit2 size={18} />
-                    </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); startEditing(note); }}
+                    aria-label="Edit"
+                    className="hover:opacity-80"
+                  >
+                    <Edit2 size={18} />
+                  </button>
 
                     <div className="flex space-x-3">
                       <button
-                        onClick={() => toggleStar(note.id)}
+                        onClick={(e) => {e.stopPropagation(); toggleStar(note.id)}}
                         aria-label="Star"
                         className="hover:opacity-80"
                       >
@@ -139,7 +157,7 @@ export default function ViewNotesPage() {
                         />
                       </button>
                       <button
-                        onClick={() => deleteNote(note.id)}
+                        onClick={(e) => { e.stopPropagation(); deleteNote(note.id)}}
                         aria-label="Delete"
                         className="hover:opacity-80"
                       >
@@ -153,8 +171,12 @@ export default function ViewNotesPage() {
           </div>
         )}
       </div>
+      <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
 
-      {/* ── Edit Modal ────────────────────────────────────────────── */}
       {editingNote && (
         <Dialog
           open={true}
@@ -195,6 +217,72 @@ export default function ViewNotesPage() {
           </DialogContent>
         </Dialog>
       )}
-    </>
+      {selectedNote && (
+        <Dialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setSelectedNote(null);
+          }}
+        >
+          <DialogContent className="max-w-2xl w-full">
+            <DialogHeader>
+              <DialogTitle>{selectedNote.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div
+                className="overflow-y-auto max-h-[60vh] p-2 bg-white text-gray-900 rounded"
+              >
+                {selectedNote.content}
+              </div>
+              <p className="text-right text-sm text-gray-500">
+                {new Date(selectedNote.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+            <DialogFooter className="flex justify-between">
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => {
+                    setEditingNote(selectedNote);
+                    setEditTitle(selectedNote.title);
+                    setEditContent(selectedNote.content);
+                  }}
+                  className="hover:opacity-80"
+                >
+                  <Edit2 size={18} />
+                </button>
+                <button
+                  onClick={() => {
+                    toggleStar(selectedNote.id);
+                  }}
+                  className="hover:opacity-80"
+                >
+                  <Star
+                    size={18}
+                    className={selectedNote.starred ? "text-yellow-300" : ""}
+                  />
+                </button>
+                <button
+                  onClick={() => {
+                    deleteNote(selectedNote.id);
+                    setSelectedNote(null);
+                  }}
+                  className="hover:opacity-80"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+              <Button variant="secondary" onClick={() => setSelectedNote(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+    </div>
   );
 }

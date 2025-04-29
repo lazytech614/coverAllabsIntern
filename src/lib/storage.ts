@@ -1,4 +1,3 @@
-// src/lib/storage.ts
 export interface Note {
   id: string;
   title: string;
