@@ -25,16 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body> */}
       <body className="min-h-screen bg-gray-50 text-gray-800">
-        <div className="max-w-3xl mx-auto p-4">
-          <h1 className="text-2xl font-bold mb-4">Custom Note Service</h1>
-          <Nav /> {/* Why this nav approach for simplicity */}
-          <main className="mt-6">{children}</main>
+        <div className="max-w-6xl mx-auto p-4">
+          <Nav />
+          <main className="mt-6">
+            {children}
+          </main>
         </div>
       </body>
     </html>

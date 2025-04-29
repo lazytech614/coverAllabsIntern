@@ -1,5 +1,5 @@
-// src/app/add-note/page.tsx
 "use client";
+
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import { loadNotes, saveNotes, Note } from "@/lib/storage";
@@ -18,7 +18,13 @@ export default function AddNotePage() {
     setError(null);
     try {
       const notes = loadNotes();
-      const newNote: Note = { id: uuid(), title, content, createdAt: Date.now() };
+      const newNote: Note = { 
+        id: uuid(), 
+        title, 
+        content, 
+        starred: false,
+        createdAt: Date.now() 
+      };
       saveNotes([newNote, ...notes]);
       setTitle(""); setContent("");
     } catch (err) {
