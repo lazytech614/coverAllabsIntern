@@ -31,7 +31,7 @@ export default function AddNotePage() {
       toast.success("Note saved.");
     } catch (err: Error | any) {
       console.log(err.message);
-      setError("Failed to save note. Please try again."); 
+      setError("Failed to save note. Please try again"); 
       toast.error("Failed to save note. Please try again.");
     } finally {
       setSaving(false);
