@@ -32,7 +32,7 @@ export default function RootLayout({
           <main className="mt-6">
             {children}
             <Toaster 
-              position="top-center" 
+              position="bottom-right" 
               richColors 
               toastOptions={{ duration: 3000 }} 
             />
