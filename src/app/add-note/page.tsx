@@ -29,7 +29,8 @@ export default function AddNotePage() {
       saveNotes([newNote, ...notes]);
       setTitle(""); setContent("");
       toast.success("Note saved.");
-    } catch (err) {
+    } catch (err: Error | any) {
+      console.log(err.message);
       setError("Failed to save note. Please try again."); 
       toast.error("Failed to save note. Please try again.");
     } finally {
