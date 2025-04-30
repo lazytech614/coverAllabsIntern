@@ -33,7 +33,9 @@ export default function ViewNotesPage() {
 
     // pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 6;
+    const [pageSize, setPageSize] = useState(6);
+
+    // const pageSize = 6;
 
   useEffect(() => {
     try {
@@ -43,6 +45,19 @@ export default function ViewNotesPage() {
     } finally {
       setLoading(false);
     }
+
+    const updatePageSize = () => {
+      if (window.innerWidth < 640) {
+        setPageSize(4); // small screens
+      } else {
+        setPageSize(6); // larger screens
+      }
+    };
+  
+    updatePageSize(); // set initially
+  
+    window.addEventListener("resize", updatePageSize);
+    return () => window.removeEventListener("resize", updatePageSize);
   }, []);
 
   const deleteNote = (id: string) => {

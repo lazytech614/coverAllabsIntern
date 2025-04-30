@@ -14,7 +14,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pr
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="flex space-x-1 justify-center mt-6 absolute bottom-16 left-1/2 transform -translate-x-1/2">
+    <div className="flex space-x-1 justify-center mt-6 absolute bottom-6 sm:bottom-16 left-1/2 transform -translate-x-1/2">
       <button
         className="px-2 py-1 border rounded disabled:opacity-50"
         disabled={currentPage === 1}

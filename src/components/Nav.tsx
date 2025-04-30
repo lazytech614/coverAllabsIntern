@@ -30,8 +30,8 @@ export default function Nav() {
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 )}
               >
-                <Icon className="mr-1" size={18} />
-                <span className="text-sm">{label}</span>
+                <Icon className="sm:mr-1" size={18} />
+                <span className="hidden sm:inline text-sm">{label}</span>
               </Link>
             );
           })}

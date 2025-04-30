@@ -27,7 +27,7 @@ export default function StarredNotesPage() {
 
    // pagination
    const [currentPage, setCurrentPage] = useState(1);
-   const pageSize = 6;
+   const [pageSize, setPageSize] = useState(6);
  
 
   // for “view expanded”
@@ -47,6 +47,19 @@ export default function StarredNotesPage() {
     } finally {
       setLoading(false);
     }
+
+    const updatePageSize = () => {
+      if (window.innerWidth < 640) {
+        setPageSize(4); // small screens
+      } else {
+        setPageSize(6); // larger screens
+      }
+    };
+  
+    updatePageSize(); // set initially
+  
+    window.addEventListener("resize", updatePageSize);
+    return () => window.removeEventListener("resize", updatePageSize);
   }, []);
 
   const refresh = () => {
